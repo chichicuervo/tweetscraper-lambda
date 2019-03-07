@@ -1,0 +1,3 @@
+[submodule "app/chrome"]
+	path = app/chrome
+	url = https://github.com/alixaxel/chrome-aws-lambda.git
