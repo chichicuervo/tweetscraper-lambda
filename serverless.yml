@@ -1,4 +1,4 @@
-service: lambda-boilerplate # NOTE: update this with your service name
+service: tweetscrape
 
 plugins:
     - serverless-scriptable-plugin
@@ -37,7 +37,7 @@ custom:
 
     webpack:
         webpackConfig: config/server.webpack.js
-        includeModules: 
+        includeModules:
             forceExclude:
                 - chrome-aws-lambda
 
