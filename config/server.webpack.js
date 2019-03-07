@@ -51,6 +51,12 @@ const config = async () => {
                 } ],
             } ]
 		},
+		resolve: {
+			modules: [
+				path.resolve( ROOT_DIR, "src/lib" ),
+				path.resolve( ROOT_DIR, "node_modules" )
+			]
+		},
 		output: {
 			libraryTarget: "commonjs2",
 			path: path.resolve( ROOT_DIR, ".webpack" ),

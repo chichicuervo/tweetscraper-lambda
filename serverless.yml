@@ -18,13 +18,21 @@ provider:
 
 package:
     individually: true
+    exclude:
+        - node_modules/aws-sdk/**
+        - app/**
+        - .git/**
+
+layers:
+    chrome:
+        path: app/chrome/dist
 
 custom:
     serverless-offline:
         host: 0.0.0.0
         resourceRoutes:
             StaticFilesProxyMethod:
-                Uri: 'http://localhost:3001/{file}'
+                Uri: http://localhost:3001/{file}
 
     webpack:
         webpackConfig: config/server.webpack.js
@@ -43,19 +51,32 @@ custom:
             - ${self:custom.StaticFilesBucketName}
 
     scriptHooks:
+        before:package:initialize:
+            -   cd app/chrome/ &&
+                rm -rf dist/ &&
+                git checkout tags/v1.11.2 &&
+                npm pack &&
+                mkdir -p dist/nodejs/node_modules/chrome-aws-lambda &&
+                tar --directory dist/nodejs/node_modules/chrome-aws-lambda/ --extract --file chrome-aws-lambda-*.tgz --strip-components=1 &&
+                rm -f chrome-aws-lambda-*.tgz
         after:deploy:deploy:
             - serverless s3sync -r ${self:provider.region} -s ${self:provider.stage}
         before:s3sync:sync:
             - npm run build:client
 
 functions:
-    hello:
-        handler: src/lambda/hello.default
+    tweet:
+        handler: src/lambda/scrape.default
         events:
             - http:
                 method: GET
-                path: /${self:custom.apiPrefix}/hello
+                path: /${self:custom.apiPrefix}/tweet/{tweet+}
                 cors: true
+                timeout: 300
+                memorySize: 2048
+                request:
+                    headers:
+                        Content-Type: application/json
 
 resources:
     - Resources:
