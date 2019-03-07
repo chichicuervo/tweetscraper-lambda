@@ -53,6 +53,9 @@ custom:
         buckets:
             - ${self:custom.StaticFilesBucketName}
 
+    profiles:
+        prod: redtorch-${self:service}
+
     scriptHooks:
         before:package:initialize:
             -   cd app/chrome/ &&
