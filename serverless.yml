@@ -1,0 +1,65 @@
+service: lambda-boilerplate # NOTE: update this with your service name
+
+plugins:
+    - serverless-scriptable-plugin
+    - aws-amplify-serverless-plugin
+    - serverless-webpack
+    - serverless-offline
+    - serverless-s3-remover
+    - serverless-iam-roles-per-function
+    - serverless-s3-sync
+
+provider:
+    name: aws
+    runtime: nodejs8.10
+    stage: ${opt:stage, 'dev'}
+    region: ${opt:region, 'us-west-2'}
+    profile: ${self:custom.profiles.${self:provider.stage}, 'default'}
+
+package:
+    individually: true
+
+custom:
+    serverless-offline:
+        host: 0.0.0.0
+        resourceRoutes:
+            StaticFilesProxyMethod:
+                Uri: 'http://localhost:3001/{file}'
+
+    webpack:
+        webpackConfig: config/server.webpack.js
+        includeModules: true
+
+    apiPrefix: api
+
+    StaticFilesBucketName: ${self:service}-${self:provider.stage}-staticfilesbucket
+    s3Sync:
+        -   bucketName: ${self:custom.StaticFilesBucketName}
+            localDir: dist
+
+    remover:
+        prompt: false
+        buckets:
+            - ${self:custom.StaticFilesBucketName}
+
+    scriptHooks:
+        after:deploy:deploy:
+            - serverless s3sync -r ${self:provider.region} -s ${self:provider.stage}
+        before:s3sync:sync:
+            - npm run build:client
+
+functions:
+    hello:
+        handler: src/lambda/hello.default
+        events:
+            - http:
+                method: GET
+                path: /${self:custom.apiPrefix}/hello
+                cors: true
+
+resources:
+    - Resources:
+    - ${file(config/resources/static-files.yml)}
+    - ${file(config/resources/static-proxy.yml)}
+    - ${file(config/resources/cognito-auth.yml)}
+    - ${file(config/resources/cloudfront.yml)}

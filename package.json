@@ -1,0 +1,55 @@
+{
+  "name": "boilerplate-lambda",
+  "version": "0.0.1",
+  "description": "",
+  "main": "index.js",
+  "sideEffects": [
+    "*.css"
+  ],
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start:dev": "concurrently \"npm run start:dev:client\" \"npm run start:dev:server\"",
+    "start:dev:client": "webpack-dev-server --config config/client.webpack.js",
+    "start:dev:server": "serverless offline",
+    "build:client": "cross-env NODE_ENV=production webpack --config config/client.webpack.js"
+  },
+  "author": "",
+  "license": "UNLICENCED",
+  "devDependencies": {
+    "@babel/core": "^7.3.4",
+    "@babel/plugin-proposal-class-properties": "^7.3.4",
+    "@babel/polyfill": "^7.2.5",
+    "@babel/preset-env": "^7.3.4",
+    "@babel/preset-react": "^7.0.0",
+    "aws-amplify-serverless-plugin": "^1.4.1",
+    "babel-loader": "^8.0.5",
+    "clean-webpack-plugin": "^1.0.1",
+    "concurrently": "^4.1.0",
+    "cross-env": "^5.2.0",
+    "css-loader": "^2.1.0",
+    "file-loader": "^3.0.1",
+    "html-webpack-plugin": "^3.2.0",
+    "react-hot-loader": "^4.7.1",
+    "serverless": "^1.38.0",
+    "serverless-iam-roles-per-function": "^1.0.4",
+    "serverless-offline": "^4.7.1",
+    "serverless-s3-remover": "^0.6.0",
+    "serverless-s3-sync": "^1.7.3",
+    "serverless-scriptable-plugin": "^1.0.0",
+    "serverless-webpack": "^5.2.0",
+    "style-loader": "^0.23.1",
+    "uglifyjs-webpack-plugin": "^2.1.2",
+    "webpack": "^4.29.6",
+    "webpack-bundle-analyzer": "^3.1.0",
+    "webpack-cli": "^3.2.3",
+    "webpack-dev-server": "^3.2.1",
+    "webpack-hot-middleware": "^2.24.3",
+    "webpack-node-externals": "^1.7.2"
+  },
+  "dependencies": {
+    "lambda-api": "^0.10.1",
+    "lodash-es": "^4.17.11",
+    "react": "^16.8.3",
+    "react-dom": "^16.8.3"
+  }
+}

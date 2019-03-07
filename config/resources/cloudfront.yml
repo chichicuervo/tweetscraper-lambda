@@ -1,0 +1,82 @@
+Resources:
+    StaticFilesOriginAccessIdentity:
+        Type: AWS::CloudFront::CloudFrontOriginAccessIdentity
+        Properties:
+            CloudFrontOriginAccessIdentityConfig:
+                Comment: Serverless managed web app S3 bucket origin-access-identity
+
+    ProxyDistribution:
+        Type: AWS::CloudFront::Distribution
+        Properties:
+            DistributionConfig:
+                Origins:
+                    -   Id: StaticFiles
+                        DomainName:
+                            Fn::GetAtt: [StaticFilesBucket, DomainName]
+                        S3OriginConfig:
+                            OriginAccessIdentity:
+                                Fn::Join:
+                                    - ''
+                                    -   - origin-access-identity/cloudfront/
+                                        - Ref: StaticFilesOriginAccessIdentity
+                            # CustomOriginConfig:
+                            #     HTTPPort: '80'
+                            #     HTTPSPort: '443'
+                            #     OriginProtocolPolicy: http-only
+                            #     OriginSSLProtocols: [ "TLSv1", "TLSv1.1", "TLSv1.2" ]
+                    -   Id: ApiGateway
+                        DomainName:
+                            Fn::Join:
+                                - ""
+                                -   - Ref: ApiGatewayRestApi
+                                    - ".execute-api."
+                                    - Ref: AWS::Region
+                                    - ".amazonaws.com"
+                        CustomOriginConfig:
+                            HTTPPort: '80'
+                            HTTPSPort: '443'
+                            OriginProtocolPolicy: https-only
+                            OriginSSLProtocols: [ "TLSv1", "TLSv1.1", "TLSv1.2" ]
+                        OriginPath: /${self:provider.stage}
+                Enabled: true
+                HttpVersion: http2
+                Comment: ${self:service}-${self:provider.stage} - StaticFiles
+                PriceClass: PriceClass_All
+                DefaultRootObject: index.html
+            ## Since the Single Page App is taking care of the routing we need to make sure ever path is served with index.html
+            ## The only exception are files that actually exist e.h. app.js, reset.css
+                CustomErrorResponses:
+                    -   ErrorCode: 403
+                        ResponseCode: 200
+                        ResponsePagePath: /index.html
+                DefaultCacheBehavior:
+                    AllowedMethods: [GET, HEAD, OPTIONS]
+                    ## The origin id defined above
+                    TargetOriginId: StaticFiles
+                    ## Defining if and how the QueryString and Cookies are forwarded to the origin which in this case is S3
+                    ForwardedValues:
+                        QueryString: false
+                        Cookies:
+                            Forward: none
+                    ## The protocol that users can use to access the files in the origin. To allow HTTP use `allow-all`
+                    ViewerProtocolPolicy: redirect-to-https
+                    DefaultTTL: 300
+                    MinTTL: 60
+                    MaxTTL: 3600
+                CacheBehaviors:
+                    -   TargetOriginId: ApiGateway
+                        PathPattern: ${self:custom.apiPrefix}/*
+                        AllowedMethods: [HEAD, DELETE, POST, GET, OPTIONS, PUT, PATCH]
+                        CachedMethods: [GET, HEAD, OPTIONS]
+                        ForwardedValues:
+                            QueryString: true
+                            Headers:
+                                - Accept
+                                - Referer
+                                - Authorization
+                                - Content-Type
+                            Cookies:
+                                Forward: all
+                        MinTTL: '0'
+                        DefaultTTL: '60'
+                        ViewerProtocolPolicy: https-only

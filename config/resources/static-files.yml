@@ -1,0 +1,56 @@
+Resources:
+    StaticFilesBucket:
+        Type: AWS::S3::Bucket
+        Properties:
+            BucketName: ${self:custom.StaticFilesBucketName}
+            WebsiteConfiguration:
+                IndexDocument: index.html
+                ErrorDocument: error.html
+            # VersioningConfiguration:
+            #     Status: Enabled
+            CorsConfiguration:
+                CorsRules:
+                    -   AllowedOrigins:
+                            - '*' # this needs to be set to some sort of domnainy thing
+                        AllowedHeaders:
+                            - '*'
+                        AllowedMethods:
+                            - GET
+                            - HEAD
+                        MaxAge: 3000
+
+    StaticFilesBucketPolicy:
+        Type: AWS::S3::BucketPolicy
+        Properties:
+            Bucket:
+                Ref: StaticFilesBucket
+            PolicyDocument:
+                Statement:
+                    -   Sid: OAIGetObject
+                        Effect: Allow
+                        Principal:
+                            AWS:
+                                Fn::Join:
+                                    - " "
+                                    -   - arn:aws:iam::cloudfront:user/CloudFront Origin Access Identity
+                                        - Ref: StaticFilesOriginAccessIdentity
+                        Action:
+                            - s3:GetObject
+                        Resource:
+                            Fn::Join:
+                                - ''
+                                -   - 'arn:aws:s3:::'
+                                    - Ref: StaticFilesBucket
+                                    - "/*"
+                    -   Sid: AllowPublicRead
+                        Effect: Allow
+                        Principal:
+                            AWS: '*'
+                        Action:
+                            - s3:GetObject
+                        Resource:
+                            Fn::Join:
+                                - ''
+                                -   - 'arn:aws:s3:::'
+                                    - Ref: StaticFilesBucket
+                                    - "/*"

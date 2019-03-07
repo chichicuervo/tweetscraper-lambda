@@ -1,0 +1,44 @@
+Resources:
+    StaticFilesProxyResource:
+        Type: AWS::ApiGateway::Resource
+        Properties:
+            ParentId:
+                Fn::GetAtt:
+                    - ApiGatewayRestApi
+                    - RootResourceId
+            PathPart: '{file+}'
+            RestApiId:
+                Ref: ApiGatewayRestApi
+
+    StaticFilesProxyMethod:
+        Type: AWS::ApiGateway::Method
+        DependsOn:
+            - StaticFilesBucket
+        Properties:
+            ResourceId:
+                Ref: StaticFilesProxyResource
+            RestApiId:
+                Ref: ApiGatewayRestApi
+            AuthorizationType: NONE
+            HttpMethod: GET
+            MethodResponses:
+                - StatusCode: 200
+            RequestParameters:
+                method.request.path.file: true
+            Integration:
+                Type: HTTP_PROXY
+                IntegrationHttpMethod: GET
+                # Uri: 'https://s3-${self:provider.region}.amazonaws.com/${self:custom.StaticFilesBucketName}/{file}'
+                Uri: http://${self:custom.StaticFilesBucketName}.s3-website-${self:provider.region}.amazonaws.com/{file}
+                # Uri:
+                #     Fn::Join:
+                #         -   ''
+                #         -   - Fn::GetAtt:
+                #                 - StaticFilesBucket
+                #                 - WebsiteURL
+                #             - "{file}"
+                IntegrationResponses:
+                    - StatusCode: 200
+                RequestParameters:
+                    integration.request.path.file: method.request.path.file
+                PassthroughBehavior: WHEN_NO_MATCH

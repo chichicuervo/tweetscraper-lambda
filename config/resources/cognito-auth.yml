@@ -1,0 +1,42 @@
+Resources:
+    CognitoAuthorizer:
+        Type: AWS::ApiGateway::Authorizer
+        Properties:
+            Name: ${self:service}-${self:provider.stage}-auth
+            IdentitySource: method.request.header.Authorization
+            Type: COGNITO_USER_POOLS
+            RestApiId:
+                Ref: ApiGatewayRestApi
+            ProviderARNs:
+                - Fn::GetAtt:
+                    - CognitoUserPool
+                    - Arn
+
+    CognitoUserPool:
+        Type: AWS::Cognito::UserPool
+        Properties:
+            UserPoolName: ${self:service}-${self:provider.stage}-userpool
+            UsernameAttributes:
+                - email
+            AutoVerifiedAttributes:
+                - email
+            Policies:
+                PasswordPolicy:
+                    MinimumLength: 12
+                    RequireLowercase: true
+                    RequireNumbers: true
+                    RequireSymbols: true
+                    RequireUppercase: true
+            # MfaConfiguration: OPTIONAL
+            AdminCreateUserConfig:
+                AllowAdminCreateUserOnly: true
+                UnusedAccountValidityDays: 2
+
+    CognitoUserPoolClient:
+        Type: AWS::Cognito::UserPoolClient
+        Properties:
+            ClientName: ${self:service}-${self:provider.stage}-userpoolclient
+            UserPoolId:
+                Ref: CognitoUserPool
+            GenerateSecret: false
+            RefreshTokenValidity: 7
