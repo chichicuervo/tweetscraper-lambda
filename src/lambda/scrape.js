@@ -5,6 +5,7 @@ import path from 'path';
 import fetch from 'node-fetch';
 import API from 'lambda-api';
 
+import chromium from 'chrome-aws-lambda';
 import ScrapeTweet from 'TweetScraper';
 
 const api = API()
@@ -73,13 +74,21 @@ const tweet = async (req, res)  => {
     console.log(proxy);
 
     try {
+        const launch_opts = {
+            dumpio: DEV_MODE || false,
+            defaultViewport: chromium.defaultViewport,
+            headless: chromium.headless,
+        }
+
+        if (os.platform() == 'freebsd') {
+            launch_opts.executablePath = '/usr/local/bin/chrome'
+        } else {
+            launch_opts.executablePath = await chromium.executablePath
+        }
+
         var scrape = new ScrapeTweet({ options: {
-            launch: os.platform() == 'freebsd' ? {
-                executablePath: '/usr/local/bin/chrome',
-                dumpio: true,
-            } : {
-                dumpio: true,
-            },
+            launch: launch_opts,
+            args: chromium.args,
             proxy: proxy,
             pages: 99,
             timeline: timelineMode,

@@ -52,9 +52,10 @@
     "lambda-api": "^0.10.1",
     "lodash-es": "^4.17.11",
     "node-fetch": "^2.3.0",
-    "puppeteer-core": "^1.13.0",
+    "puppeteer-core": "^1.11.2",
     "react": "^16.8.3",
     "react-dom": "^16.8.3",
-    "typeface-roboto": "0.0.54"
+    "typeface-roboto": "0.0.54",
+    "chrome-aws-lambda": "^1.12.2"
   }
 }
