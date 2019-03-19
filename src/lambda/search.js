@@ -22,14 +22,9 @@ const isFalse = i => {
 
 const tweet = async (req, res)  => {
     try {
-        var doTimeline = !!(req.query.timeline || isTrue(req.query.replies || false) || isTrue(req.query.parents || false));
-        var timelineMode = req.query.timeline && req.query.timeline == 'full' ? 'full' : doTimeline;
+        var timelineMode = req.query.idsOnly && isTrue(req.query.idsOnly) ? 'light' : 'full';
 
-        if (!req.params.tweet_id.match(/^\d+$/)) {
-            throw new Error('Invalid tweet ID');
-        }
-
-        var url = path.join('https://twitter.com/', req.params.user || '_', 'status', req.params.tweet_id);
+        var url = `https://twitter.com/search?f=tweets&vertical=default&q=${req.query.q}&src=typd&qf=off`;
 
         var proxy = await extractProxy(req);
     } catch (e) {
@@ -43,7 +38,7 @@ const tweet = async (req, res)  => {
         const launch_opts = {
             dumpio: DEV_MODE || false,
             defaultViewport: chromium.defaultViewport,
-            headless: DEV_MODE || chromium.headless,
+            headless: DEV_MODE || chromium.headless
         }
 
         if (os.platform() == 'freebsd') {
@@ -58,19 +53,15 @@ const tweet = async (req, res)  => {
             proxy: proxy,
             pages: 99,
             timeline: timelineMode,
-            replies: timelineMode == 'full' || isTrue(req.query.replies || false),
-            parents: timelineMode == 'full' || isTrue(req.query.parents || false),
             quote: true,
             loadWait: 1250,
             doScreenshot: req.query.screenshot && isFalse(req.query.screenshot) ? false : true,
             // debug: true
         }});
 
-        var data = await scrape.getTweet(url);
+        var data = await scrape.getSearch(url);
         if (data) {
-            if (timelineMode !== 'full') {
-                delete data.screenshot;
-            }
+            delete data.screenshot;
             res.json(data);
         } else {
             res.sendStatus(404);
@@ -84,8 +75,7 @@ const tweet = async (req, res)  => {
     scrape.close();
 }
 
-api.get('/api/tweet/:tweet_id', tweet)
-api.get('/api/tweet/:user/status/:tweet_id', tweet)
+api.get('/api/search', tweet)
 
 export default async ( event, context ) => {
 	return await api.run(event, context);

@@ -53,9 +53,6 @@ custom:
         buckets:
             - ${self:custom.StaticFilesBucketName}
 
-    profiles:
-        prod: redtorch-${self:service}
-
     scriptHooks:
         before:package:initialize:
             -   cd app/chrome/ &&
@@ -83,6 +80,23 @@ functions:
                 path: /${self:custom.apiPrefix}/tweet/{tweet+}
                 cors: true
                 timeout: 300
+                memorySize: 2048
+                request:
+                    headers:
+                        Content-Type: application/json
+
+    search:
+        handler: src/lambda/search.default
+        timeout: 600
+        memorySize: 1536
+        layers:
+            - Ref: ChromeLambdaLayer
+        events:
+            - http:
+                method: GET
+                path: /${self:custom.apiPrefix}/search
+                cors: true
+                timeout: 600
                 memorySize: 2048
                 request:
                     headers:
