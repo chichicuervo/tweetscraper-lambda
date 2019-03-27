@@ -55,6 +55,7 @@ const tweet = async (req, res)  => {
             timeline: timelineMode,
             quote: true,
             loadWait: 1250,
+            timeout: 600,
             doScreenshot: req.query.screenshot && isFalse(req.query.screenshot) ? false : true,
             // debug: true
         }});

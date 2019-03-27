@@ -384,7 +384,8 @@ class ScrapeTweet {
         const page = await this.getPage();
 
         return await page.goto(url, {
-            waitUntil: this.options.pageWaitMode || 'load'
+            waitUntil: this.options.pageWaitMode || 'load',
+            timeout: (this.options.pageTimeout || 3600) * 1000
         })
             .then(async response => {
                 if (!response.ok()) {
@@ -415,7 +416,8 @@ class ScrapeTweet {
         const page = await this.getPage();
 
         return await page.goto(url, {
-            waitUntil: this.options.pageWaitMode || 'load'
+            waitUntil: this.options.pageWaitMode || 'load',
+            timeout: (this.options.pageTimeout || 3600) * 1000
         })
             .then(async response => {
                 if (!response.ok()) {

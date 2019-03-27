@@ -15,7 +15,7 @@ const getProxyListProxy = apikey => {
         "minUptime=90&"
 
     if (apikey) {
-        url += 'apikey=' + apikey;
+        url += 'apiKey=' + apikey;
     }
 
     return fetch(url)
@@ -34,6 +34,12 @@ const getProxyListProxy = apikey => {
 
 const extractProxy = req => {
     const q = req.query;
+
+    if (q.proxy_url) {
+        return {
+            url: q.proxy_url
+        };
+    }
 
     if (isTrue(q.proxy)) {
         return getProxyListProxy(q.apikey || null);
